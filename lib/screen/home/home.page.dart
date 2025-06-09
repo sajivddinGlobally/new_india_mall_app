@@ -1,24 +1,30 @@
+import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:new_india_mall_app/data/provider/allproductsController.dart';
+import 'package:new_india_mall_app/data/provider/categoryController.dart';
 import 'package:new_india_mall_app/screen/account/account.page.dart';
 import 'package:new_india_mall_app/screen/cart/cart.page.dart';
 import 'package:new_india_mall_app/screen/home/category.page.dart';
 import 'package:new_india_mall_app/screen/particular.search.page.dart';
 import 'package:new_india_mall_app/screen/search.page.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> {
   int tabBottom = 0;
   @override
   Widget build(BuildContext context) {
+    final categoryprovider = ref.watch(categoryProvider);
+    final getAllProvider = ref.watch(allProductProvider);
     return Scaffold(
       backgroundColor: Color(0xFFFFFFFF),
       body: tabBottom == 0
@@ -278,63 +284,71 @@ class _HomePageState extends State<HomePage> {
                   SizedBox(height: 20.h),
                   SizedBox(
                     height: 100.h,
-                    child: ListView.builder(
-                      itemCount: 2,
-                      padding: EdgeInsets.zero,
-                      scrollDirection: Axis.horizontal,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: EdgeInsets.only(left: 10.w),
-                          child: Column(
-                            children: [
-                              Container(
-                                width: 60.w,
-                                height: 60.h,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Color.fromARGB(255, 244, 232, 243),
-                                ),
-                                child: ClipOval(
-                                  child: Image.network(
-                                    "https://placehold.jp/3d4070/ffffff/150x150.png",
+                    child: categoryprovider.when(
+                      data: (category) {
+                        return ListView.builder(
+                          itemCount: 10,
+                          padding: EdgeInsets.zero,
+                          scrollDirection: Axis.horizontal,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: EdgeInsets.only(left: 10.w),
+                              child: Column(
+                                children: [
+                                  Container(
                                     width: 60.w,
                                     height: 60.h,
-                                    fit: BoxFit.cover,
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            Image.asset(
-                                              "assets/placeholder.png",
-                                              width: 60.w,
-                                              height: 60.h,
-                                              fit: BoxFit.cover,
-                                            ),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 5.h),
-                              SizedBox(
-                                width: 75.w,
-                                child: Text(
-                                  textAlign: TextAlign.center,
-                                  "categorydata[index].name",
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 12.sp,
-                                    color: const Color.fromARGB(
-                                      255,
-                                      102,
-                                      102,
-                                      102,
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Color.fromARGB(255, 244, 232, 243),
                                     ),
-                                    letterSpacing: -0.70,
+                                    child: ClipOval(
+                                      child: Image.network(
+                                        category[index].imageUrl ??
+                                            "https://placehold.jp/3d4070/ffffff/150x150.png",
+                                        width: 60.w,
+                                        height: 60.h,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Image.asset(
+                                                  "assets/placeholder.png",
+                                                  width: 60.w,
+                                                  height: 60.h,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                  SizedBox(height: 5.h),
+                                  SizedBox(
+                                    width: 75.w,
+                                    child: Text(
+                                      category[index].name,
+                                      textAlign: TextAlign.center,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 12.sp,
+                                        color: const Color.fromARGB(
+                                          255,
+                                          102,
+                                          102,
+                                          102,
+                                        ),
+                                        letterSpacing: -0.70,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            );
+                          },
                         );
                       },
+                      error: (error, stackTrace) =>
+                          Center(child: Text(error.toString())),
+                      loading: () => Center(child: CircularProgressIndicator()),
                     ),
                   ),
                   SizedBox(height: 15.h),
@@ -552,91 +566,226 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class DealsBody extends StatefulWidget {
+class DealsBody extends ConsumerStatefulWidget {
   final bool showDiscount;
   const DealsBody({super.key, required this.showDiscount});
 
   @override
-  State<DealsBody> createState() => _DealsBodyState();
+  ConsumerState<DealsBody> createState() => _DealsBodyState();
 }
 
-class _DealsBodyState extends State<DealsBody> {
+class _DealsBodyState extends ConsumerState<DealsBody> {
   @override
   Widget build(BuildContext context) {
+    final getAllProvider = ref.watch(allProductProvider);
     return SizedBox(
       height: 310.h,
-      child: ListView.builder(
-        itemCount: 3,
-        scrollDirection: Axis.horizontal,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: EdgeInsets.only(left: 20.w),
-            child: GestureDetector(
+      child: getAllProvider.when(
+        data: (product) {
+          return ListView.builder(
+            itemCount: 10,
+            scrollDirection: Axis.horizontal,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: EdgeInsets.only(left: 20.w),
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                        builder: (context) => ParticularSearchPage(
+                          id: product[index].id.toString(),
+                        ),
+                      ),
+                    );
+                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12.r),
+                            child: Image.network(
+                              product[index].imageUrl,
+                              width: 166.w,
+                              height: 200.h,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Image.asset(
+                                    "assets/placeholder.png",
+                                    width: 166.w,
+                                    height: 200.h,
+                                    fit: BoxFit.cover,
+                                  ),
+                            ),
+                          ),
+                          if (widget.showDiscount)
+                            Positioned(
+                              top: 10.h,
+                              child: Image.asset(
+                                "assets/of.png",
+                                width: 60.w,
+                                height: 60.h,
+                              ),
+                            ),
+                          if (widget.showDiscount)
+                            Positioned(
+                              top: 20.h,
+                              left: 10.w,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "20%",
+                                    style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15.sp,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  Text(
+                                    "OFF",
+                                    style: GoogleFonts.inter(
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 10.sp,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                      SizedBox(height: 15.h),
+                      Row(
+                        children: [
+                          Container(
+                            width: 40.w,
+                            height: 20.h,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(30.r),
+                              color: Color(0xFF961C82),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.star,
+                                  color: Colors.white,
+                                  size: 15.sp,
+                                ),
+                                Text(
+                                  "4.5",
+
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 10.sp,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 5.w),
+                          Text(
+                            "(15 reviews)",
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 10.sp,
+                              color: const Color.fromARGB(255, 102, 102, 102),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 10.h),
+                      SizedBox(
+                        width: 159.w,
+                        child: Text(
+                          // "5 in 1 Lipstick Red Edition & Nud...",
+                          product[index].name,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 12.sp,
+                            color: const Color.fromARGB(255, 102, 102, 102),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 5.h),
+                      Text(
+                        // "450.00",
+                        product[index].regularPrice,
+                        style: GoogleFonts.inter(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w500,
+                          color: Color(0xFF961C82),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+        error: (error, stackTrace) => Center(child: Text(e.toString())),
+        loading: () => Center(child: CircularProgressIndicator()),
+      ),
+    );
+  }
+}
+
+class GridViewBody extends ConsumerStatefulWidget {
+  const GridViewBody({super.key});
+
+  @override
+  ConsumerState<GridViewBody> createState() => _GridViewBodyState();
+}
+
+class _GridViewBodyState extends ConsumerState<GridViewBody> {
+  @override
+  Widget build(BuildContext context) {
+    final getAllProvider = ref.watch(allProductProvider);
+    return getAllProvider.when(
+      data: (products) {
+        return GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: 10,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 20.w,
+            mainAxisSpacing: 10.h,
+            childAspectRatio: 0.60,
+          ),
+          itemBuilder: (context, index) {
+            return GestureDetector(
               onTap: () {
                 Navigator.push(
                   context,
                   CupertinoPageRoute(
-                    builder: (context) => ParticularSearchPage(),
+                    builder: (context) =>
+                        ParticularSearchPage(id: products[index].id.toString()),
                   ),
                 );
               },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Stack(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12.r),
-                        child: Image.network(
-                          "https://placehold.jp/3d4070/ffffff/150x150.png",
-                          width: 166.w,
-                          height: 200.h,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Image.asset(
-                                "assets/placeholder.png",
-                                width: 166.w,
-                                height: 200.h,
-                                fit: BoxFit.cover,
-                              ),
-                        ),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: Image.network(
+                      products[index].imageUrl,
+                      height: 235.h,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Image.asset(
+                        "assets/placeholder.png",
+                        height: 235.h,
+                        fit: BoxFit.cover,
                       ),
-                      if (widget.showDiscount)
-                        Positioned(
-                          top: 10.h,
-                          child: Image.asset(
-                            "assets/of.png",
-                            width: 60.w,
-                            height: 60.h,
-                          ),
-                        ),
-                      if (widget.showDiscount)
-                        Positioned(
-                          top: 20.h,
-                          left: 10.w,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "20%",
-                                style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 15.sp,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              Text(
-                                "OFF",
-                                style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w400,
-                                  fontSize: 10.sp,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
+                    ),
                   ),
                   SizedBox(height: 15.h),
                   Row(
@@ -666,7 +815,7 @@ class _DealsBodyState extends State<DealsBody> {
                       ),
                       SizedBox(width: 5.w),
                       Text(
-                        "(15 reviews)",
+                        "(12 reviews)",
                         style: GoogleFonts.inter(
                           fontWeight: FontWeight.w500,
                           fontSize: 10.sp,
@@ -679,7 +828,8 @@ class _DealsBodyState extends State<DealsBody> {
                   SizedBox(
                     width: 159.w,
                     child: Text(
-                      "5 in 1 Lipstick Red Edition & Nud...",
+                      // "53 Pieces Cabana Tent Birthday Deco...",
+                      products[index].name,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(
                         fontWeight: FontWeight.w400,
@@ -690,7 +840,8 @@ class _DealsBodyState extends State<DealsBody> {
                   ),
                   SizedBox(height: 5.h),
                   Text(
-                    "450.00",
+                    //"\$450.00",
+                    products[index].regularPrice,
                     style: GoogleFonts.inter(
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w500,
@@ -699,121 +850,12 @@ class _DealsBodyState extends State<DealsBody> {
                   ),
                 ],
               ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-class GridViewBody extends StatefulWidget {
-  const GridViewBody({super.key});
-
-  @override
-  State<GridViewBody> createState() => _GridViewBodyState();
-}
-
-class _GridViewBodyState extends State<GridViewBody> {
-  @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      itemCount: 3,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 10.w,
-        mainAxisSpacing: 10.h,
-        childAspectRatio: 0.60,
-      ),
-      itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              CupertinoPageRoute(builder: (context) => ParticularSearchPage()),
             );
           },
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12.r),
-                child: Image.network(
-                  "https://placehold.jp/3d4070/ffffff/150x150.png",
-                  height: 235.h,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Image.asset(
-                    "assets/placeholder.png",
-                    height: 235.h,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              SizedBox(height: 15.h),
-              Row(
-                children: [
-                  Container(
-                    width: 40.w,
-                    height: 20.h,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(30.r),
-                      color: Color(0xFF961C82),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Icon(Icons.star, color: Colors.white, size: 15.sp),
-                        Text(
-                          "4.5",
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 10.sp,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 5.w),
-                  Text(
-                    "(12 reviews)",
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 10.sp,
-                      color: const Color.fromARGB(255, 102, 102, 102),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10.h),
-              SizedBox(
-                width: 159.w,
-                child: Text(
-                  "53 Pieces Cabana Tent Birthday Deco...",
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w400,
-                    fontSize: 12.sp,
-                    color: const Color.fromARGB(255, 102, 102, 102),
-                  ),
-                ),
-              ),
-              SizedBox(height: 5.h),
-              Text(
-                "\$450.00",
-                style: GoogleFonts.inter(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF961C82),
-                ),
-              ),
-            ],
-          ),
         );
       },
+      error: (error, stackTrace) => Center(child: Text(e.toString())),
+      loading: () => Center(child: CircularProgressIndicator()),
     );
   }
 }
